@@ -65,6 +65,20 @@ export const Orders: React.FC = () => {
     setExpandedOrderId(prev => prev === id ? null : id);
   };
 
+  const formatCreatedAt = (createdAt: any) => {
+    if (!createdAt) return 'Pending Auth';
+    // Firestore Timestamp
+    if (typeof createdAt === 'object' && 'seconds' in createdAt && typeof createdAt.seconds === 'number') {
+      return new Date(createdAt.seconds * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    // JS Date or ISO string
+    const d = new Date(createdAt);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    return 'Pending Auth';
+  };
+
   const statusColors = {
     pending: 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20',
     processing: 'bg-blue-500/10 text-blue-500 border border-blue-500/20',
@@ -143,7 +157,7 @@ export const Orders: React.FC = () => {
 
                         {/* Total price */}
                         <td className="py-4.5 px-6 text-right font-semibold text-white font-mono text-sm">
-                          ${order.total.toLocaleString()}
+                          {(Number.isFinite(Number(order.total)) ? Number(order.total) : 0).toLocaleString()}
                         </td>
 
                         {/* Status dropdown */}
@@ -170,9 +184,7 @@ export const Orders: React.FC = () => {
                         <td className="py-4.5 px-6 font-mono text-[11px] text-[#737373]">
                           <span className="flex items-center gap-1.5">
                             <Calendar className="w-3.5 h-3.5 text-[#525252]" />
-                            {order.createdAt 
-                              ? new Date(order.createdAt.seconds * 1000).toLocaleString(undefined, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})
-                              : 'Pending Auth'}
+                            {formatCreatedAt(order.createdAt)}
                           </span>
                         </td>
 
@@ -214,7 +226,7 @@ export const Orders: React.FC = () => {
                               <div className="md:col-span-3 space-y-3">
                                 <span className="text-[10px] uppercase font-bold text-[#737373] tracking-widest block font-medium">Line Items</span>
                                 <div className="space-y-2.5">
-                                  {order.items.map((item, index) => (
+                                  {(order.items || []).map((item, index) => (
                                     <div key={index} className="flex items-center justify-between p-3 rounded bg-[#050505]/80 border border-white/5">
                                       <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-black rounded overflow-hidden border border-white/5 shrink-0">
@@ -226,7 +238,10 @@ export const Orders: React.FC = () => {
                                         </div>
                                       </div>
                                       <div className="text-right font-mono font-semibold text-white text-xs">
-                                        ${(item.price * item.quantity).toLocaleString()}
+                                        {(() => {
+                                          const itemTotal = Number(item.price) * Number(item.quantity);
+                                          return (Number.isFinite(itemTotal) ? itemTotal : 0).toLocaleString();
+                                        })()}
                                       </div>
                                     </div>
                                   ))}

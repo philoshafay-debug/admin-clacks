@@ -43,7 +43,10 @@ export const Dashboard: React.FC = () => {
 
   const totalProducts = products.length;
   const totalOrders = orders.length;
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalRevenue = orders.reduce((sum, order) => {
+    const val = Number((order as any).total);
+    return sum + (Number.isFinite(val) ? val : 0);
+  }, 0);
 
   // Status breakdown
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
@@ -300,7 +303,7 @@ export const Dashboard: React.FC = () => {
                               : 'Pending Auth'}
                           </td>
                           <td className="py-3 text-right font-semibold text-[#f7f5f2]">
-                            ${order.total}
+                            ${Number.isFinite(Number(order.total)) ? Number(order.total) : 0}
                           </td>
                           <td className="py-3 text-right">
                             <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-semibold font-mono tracking-wide ${statusColors[order.status]}`}>
