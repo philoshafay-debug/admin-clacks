@@ -1,0 +1,93 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Luxury shoe product definition",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The brand or name of the shoe model"
+        },
+        "price": {
+          "type": "number",
+          "description": "Unit price of the shoe"
+        },
+        "category": {
+          "type": "string",
+          "description": "Shoe category, e.g. Sneakers, Boots, Loafers"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the product"
+        },
+        "stock": {
+          "type": "number",
+          "description": "Quantity in stock"
+        },
+        "sizes": {
+          "type": "array",
+          "description": "Available European sizes (e.g., 39-45)"
+        },
+        "image": {
+          "type": "string",
+          "description": "Secure URL of the image hosted on Cloudinary"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["name", "price", "category", "description", "stock", "sizes", "image", "createdAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase order",
+      "type": "object",
+      "properties": {
+        "customerName": {
+          "type": "string",
+          "description": "Name of the purchasing customer"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Customer contact phone number"
+        },
+        "address": {
+          "type": "string",
+          "description": "Shipping address"
+        },
+        "items": {
+          "type": "array",
+          "description": "Ordered products including id, quantity, selected price, size, and image"
+        },
+        "total": {
+          "type": "number",
+          "description": "Total checkout price in dollars"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processing", "shipped", "delivered"],
+          "description": "Current fulfillment status of the order"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Fulfillment created timestamp"
+        }
+      },
+      "required": ["customerName", "phone", "address", "items", "total", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "products/{productId}": {
+      "schema": "Product",
+      "description": "Store shoe catalog products"
+    },
+    "orders/{orderId}": {
+      "schema": "Order",
+      "description": "Store customer checkout order history for administration and fulfillment tracking"
+    }
+  }
+}

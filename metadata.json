@@ -1,0 +1,6 @@
+{
+  "name": "Shoe Store Admin Dashboard",
+  "description": "Luxury shoe e-commerce store admin panel for product inventory, Cloudinary uploads, and order fulfillment tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "biestjhon78@gmail.com"
+      );
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    // Product Validation
+    function isValidProduct(p) {
+      return p.name is string && p.name.size() <= 200
+        && p.price is number && p.price >= 0
+        && p.category is string && p.category.size() <= 100
+        && p.description is string && p.description.size() <= 2000
+        && p.stock is number && p.stock >= 0
+        && p.sizes is list && p.sizes.size() <= 20
+        && p.image is string && p.image.size() <= 500;
+    }
+    
+    // Order Validation
+    function isValidOrder(o) {
+      return o.customerName is string && o.customerName.size() <= 200
+        && o.phone is string && o.phone.size() <= 50
+        && o.address is string && o.address.size() <= 1000
+        && o.total is number && o.total >= 0
+        && o.status is string && (o.status == 'pending' || o.status == 'processing' || o.status == 'shipped' || o.status == 'delivered')
+        && o.items is list && o.items.size() <= 50;
+    }
+    
+    // Products Collection
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming()) && incoming().createdAt == request.time;
+      allow update: if isAdmin() && isValidProduct(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'price', 'category', 'description', 'stock', 'sizes', 'image'])
+      );
+      allow delete: if isAdmin();
+    }
+    
+    // Orders Collection
+    match /orders/{orderId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(orderId) && isValidOrder(incoming()) && incoming().createdAt == request.time;
+      allow update: if isAdmin() && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['status'])
+      );
+      allow delete: if isAdmin();
+    }
+  }
+}
